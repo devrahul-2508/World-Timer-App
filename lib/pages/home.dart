@@ -11,10 +11,13 @@ class _HomeState extends State<Home> {
   Map data = {};
   @override
   Widget build(BuildContext context) {
-    data = ModalRoute.of(context)?.settings.arguments as Map;
-    print(data);
-    String bgImage = data['isDayTime'] ? 'day.png' : 'night.png';
-    Color bgColor = data['isDayTime'] ? Colors.blue : Colors.indigo[800] as Color;
+    data = data.isNotEmpty
+        ? data
+        : ModalRoute.of(context)?.settings.arguments as Map;
+    String bgImage = data['isDayTime'] ? 'day.png' : 'night.jpg';
+    Color bgColor =
+        data['isDayTime'] ? Colors.blue : Color.fromARGB(255, 3, 0, 58);
+    Color textColor = data['isDayTime'] ? Colors.black : Colors.white;
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
@@ -27,11 +30,26 @@ class _HomeState extends State<Home> {
             child: Column(
               children: [
                 FlatButton.icon(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/location');
+                    onPressed: () async {
+                      dynamic result =
+                          await Navigator.pushNamed(context, '/location')
+                              as Map;
+                      if (result != null) {
+                        setState(() {
+                          data = {
+                            'time': result['time'],
+                            'location': result['location'],
+                            'isDayTime': result['isDayTime'],
+                            'flag': result['flag']
+                          };
+                        });
+                      }
                     },
-                    icon: Icon(Icons.edit_location),
-                    label: Text("Edit Location")),
+                    icon: Icon(Icons.edit_location,color: textColor),
+                    label: Text("Edit Location",
+                    style: TextStyle(
+                      color: textColor
+                    ),)),
                 SizedBox(
                   height: 20.0,
                 ),
@@ -40,14 +58,14 @@ class _HomeState extends State<Home> {
                   children: [
                     Text(
                       data['location'],
-                      style: TextStyle(fontSize: 28.0, letterSpacing: 2.0),
+                      style: TextStyle(fontSize: 28.0, letterSpacing: 2.0,color: textColor),
                     )
                   ],
                 ),
                 SizedBox(height: 20.0),
                 Text(
                   data['time'],
-                  style: TextStyle(fontSize: 66.0),
+                  style: TextStyle(fontSize: 66.0,color: textColor),
                 )
               ],
             ),
